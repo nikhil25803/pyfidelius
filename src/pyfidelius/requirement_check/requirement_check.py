@@ -1,5 +1,6 @@
 import re
 import logging
+import platform
 import subprocess
 from rich.logging import RichHandler
 
@@ -55,3 +56,21 @@ class RequirementCheck:
 
         log.info(validation_res[1])
         return True
+
+    def identify_os(self):
+        os_name = platform.system()
+        if os_name == "Linux":
+            return "linux"
+        elif os_name == "Windows":
+            return "windows"
+        elif os_name == "Darwin":
+            return "mac"
+        else:
+            return "unknown"
+
+
+# Example usage
+rcheck = RequirementCheck()
+os_identified = rcheck.identify_os()
+log.info(f"Operating System identified: {os_identified}")
+res = rcheck.check()
