@@ -1,4 +1,4 @@
-from pyfidelius.requirement_check.requirement_check import RequirementCheck
+from pyfidelius.requirement_check import RequirementCheck
 
 
 def test_requirement_check_true():
