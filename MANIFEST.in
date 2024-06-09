@@ -1,0 +1,2 @@
+include src/pyfidelius/fidelius-cli-1.2.0/bin/*
+include src/pyfidelius/fidelius-cli-1.2.0/lib/*.jar
