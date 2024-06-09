@@ -166,6 +166,65 @@ class Cryptography:
             log.error("Unable to encrypt message.\nError: ", e)
             return None
 
+    def sane_encrypt(
+        self,
+        encoded_string_to_encrypt,
+        sender_nonce,
+        requester_nonce,
+        sender_private_key,
+        requester_private_key,
+    ):
+        """
+        `sane-encrypt` is same as ncrypt command, with the only difference being that it accepts base64 encoded version of the input string.
+
+        Arguments:
+        - `encoded_string_to_encrypt`: The base64 encoded string that needs to be encrypted.
+        - `sender_nonce`: The nonce (number used once) of the sender for encryption.
+        - `requester_nonce`: The nonce of the requester for encryption.
+        - `sender_private_key`: The private key of the sender for encryption.
+        - `requester_private_key`: The private key of the requester for encryption.
+
+        Response:
+        ```json
+        {
+            "encryptedData": "pzMvVZNNVtJzqPkkxcCbBUWgDEBy/mBXIeT2dJWI16ZAQnnXUb9lI+S4k8XK6mgZSKKSRIHkcNvJpllnBg548wUgavBa0vCRRwdL6kY6Yw=="
+        }
+        """
+        try:
+            if not all(
+                map(
+                    self.__isBase64,
+                    [
+                        encoded_string_to_encrypt,
+                        sender_nonce,
+                        requester_nonce,
+                        sender_private_key,
+                        requester_private_key,
+                    ],
+                )
+            ):
+                log.warning(
+                    "sender_nonce, requester_nonce, sender_private_key, and requester_private_key must be base64 encoded"
+                )
+                return None
+            output = self.__execute_cli_commands(
+                [
+                    "e",
+                    encoded_string_to_encrypt,
+                    sender_nonce,
+                    requester_nonce,
+                    sender_private_key,
+                    requester_private_key,
+                ]
+            )
+
+            encrypted_data = self.__parse_output_to_dict(output)
+            return encrypted_data
+
+        except Exception as e:
+            log.error("Unable to encrypt message.\nError: ", e)
+            return None
+
     def decrypt(
         self,
         encrypted_data,
@@ -224,6 +283,75 @@ class Cryptography:
             log.error("Unable to decrypt the encrypted data.\nError: ", e)
             return None
 
+    def file_operation(self, file_path):
+        """
+        ECDH Cryptography can also be applied on file for both encryption and decryption.
+
+        The file needs to be in certain formats
+
+        - For encoding, text file should be in following format
+
+        ```txt
+        e
+        <string-to-encrypt>
+        <sender-nonce>
+        <requester-nonce>
+        <sender-private-key>
+        <requester-public-key>
+        ```
+
+        - For decoding, text file should be in following format
+
+        ```txt
+        d
+        <encrypted-data>
+        <requester-nonce>
+        <sender-nonce>
+        <requester-private-key>
+        <sender-public-key>
+        ```
+        """
+        if not os.path.exists(file_path):
+            log.error(f"File not found: {file_path}")
+            return None
+
+        with open(file_path, "r") as file:
+            file_content = file.read()
+
+        if file_content is None or file_content == "":
+            log.error("File is empty.")
+            return None
+
+        file_content_list = file_content.split("\n")
+
+        # Checks
+        if len(file_content_list) > 6:
+            log.error("No more than 6 lines are allowed")
+            return None
+
+        if file_content_list[0] not in ["e", "d"]:
+            log.error(
+                "Invalid operation. First line must be 'e' for encryption or 'd' for decryption"
+            )
+            return None
+
+        if not all(
+            map(
+                self.__isBase64,
+                file_content_list[2:],
+            )
+        ):
+            log.warning(
+                "sender_nonce, requester_nonce, sender_private_key, and requester_public_key must be base64 encoded"
+            )
+            return None
+
+        output = self.__execute_cli_commands(file_content_list)
+
+        processed_data = self.__parse_output_to_dict(output)
+
+        return processed_data
+
 
 ecdh = Cryptography()
 key_materials = ecdh.generate_key_material()
@@ -236,6 +364,14 @@ encodeed_data = ecdh.encrypt(
     requester_private_key="BAheD5rUqTy4V5xR4/6HWmYpopu5CO+KO8BECS0udNqUTSNo91TIqIIy1A4Vh+F94c+n9vAcwXU2bGcfsI5f69Y=",
 )
 print("\nEncrypted data: \n", encodeed_data)
+sane_encodeed_data = ecdh.encrypt(
+    string_to_encrypt="V29ybXRhaWwgc2hvdWxkIG5ldmVyIGhhdmUgYmVlbiBQb3R0ZXIgY290dGFnZSdzIHNlY3JldCBrZWVwZXIuLg==",
+    sender_nonce="lmXgblZwotx+DfBgKJF0lZXtAXgBEYr5khh79Zytr2Y=",
+    requester_nonce="6uj1RdDUbcpI3lVMZvijkMC8Te20O4Bcyz0SyivX8Eg=",
+    sender_private_key="AYhVZpbVeX4KS5Qm/W0+9Ye2q3rnVVGmqRICmseWni4=",
+    requester_private_key="BAheD5rUqTy4V5xR4/6HWmYpopu5CO+KO8BECS0udNqUTSNo91TIqIIy1A4Vh+F94c+n9vAcwXU2bGcfsI5f69Y=",
+)
+print("\nSane Encrypted data: \n", encodeed_data)
 decoded_data = ecdh.decrypt(
     encrypted_data="pzMvVZNNVtJzqPkkxcCbBUWgDEBy/mBXIeT2dJWI16ZAQnnXUb9lI+S4k8XK6mgZSKKSRIHkcNvJpllnBg548wUgavBa0vCRRwdL6kY6Yw==",
     sender_nonce="6uj1RdDUbcpI3lVMZvijkMC8Te20O4Bcyz0SyivX8Eg=",
@@ -244,3 +380,7 @@ decoded_data = ecdh.decrypt(
     requester_public_key="BABVt+mpRLMXiQpIfEq6bj8hlXsdtXIxLsspmMgLNI1SR5mHgDVbjHO2A+U4QlMddGzqyEidzm1AkhtSxSO2Ahg=",
 )
 print("\nDecoded data: \n", decoded_data)
+file_encrypted = ecdh.file_operation(file_path="encode.txt")
+print("\nFile encrypted data: \n", file_encrypted)
+file_decrypted = ecdh.file_operation(file_path="decode.txt")
+print("\nFile decrypted data: \n", file_decrypted)
