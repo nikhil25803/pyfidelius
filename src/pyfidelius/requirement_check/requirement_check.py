@@ -27,25 +27,28 @@ class RequirementCheck:
 
     def __validate(self, outputs):
         version_line = outputs[0]
-        match = re.search(r'version "(\d+\.\d+)', version_line)
+        match = re.search(r'version "?(\d+\.\d+)', version_line)
         if match:
             version = float(match.group(1))
             if version < 1.8:
                 return False, "Java version is less than 1.8\nRequired: 1.8 or 1.8+"
 
-        if not any("Java(TM) SE Runtime Environment" in line for line in outputs):
-            return False, "Java(TM) SE Runtime Environment not found."
+        if not any(
+            "Java(TM) SE Runtime Environment" in line or "OpenJDK Runtime Environment" in line
+            for line in outputs
+        ):
+            return False, "Java Runtime Environment not found."
 
-        if not any("Java HotSpot(TM)" in line for line in outputs):
-            return False, "Java HotSpot(TM) not found."
+        if not any("Java HotSpot(TM)" in line or "OpenJDK 64-Bit Server VM" in line for line in outputs):
+            return False, "Java VM not found."
 
         return True, "All requirements satisfied."
 
     def check(self):
         cli_command = subprocess.run(
-            ["java", "-version"], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            ["java", "-version"], stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
-        response = cli_command.stdout
+        response = cli_command.stderr  # Capture stderr instead of stdout
         outputs = response.decode("utf-8").split("\n")
 
         validation_res = self.__validate(outputs)

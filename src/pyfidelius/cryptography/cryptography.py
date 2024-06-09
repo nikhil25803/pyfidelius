@@ -39,9 +39,9 @@ class Cryptography:
         current_file_path = os.path.dirname(os.path.abspath(__file__))
         root_path = os.path.abspath(os.path.join(current_file_path, "..", ".."))
 
-        os_platform = platform.system()
+        self.os_platform = platform.system()
 
-        if os_platform == "Windows":
+        if self.os_platform == "Windows":
             script_path = os.path.join(
                 root_path, "fidelius-cli-1.2.0", "bin", "fidelius-cli.bat"
             )
@@ -56,7 +56,10 @@ class Cryptography:
         """
         Executes CLI commands based on the arguments passed in a list.
         """
-        command_to_execute = [self.SCRIPT_PATH] + args
+        if self.os_platform == "Windows":
+            command_to_execute = [self.SCRIPT_PATH] + args
+        else:
+            command_to_execute = ["bash", self.SCRIPT_PATH] + args
 
         result = subprocess.run(
             command_to_execute,
