@@ -41,7 +41,7 @@ class Cryptography:
 
     def __init__(self) -> None:
         current_file_path = os.path.dirname(os.path.abspath(__file__))
-        root_path = os.path.abspath(os.path.join(current_file_path, "..", ".."))
+        root_path = os.path.abspath(os.path.join(current_file_path, ".."))
 
         self.os_platform = platform.system()
 
