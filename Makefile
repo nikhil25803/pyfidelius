@@ -5,3 +5,7 @@ build-package:
 .PHONY: linting
 linting:
 	- flake8 src/pyfidelius
+
+.PHONY: run-tests
+run-tests:
+	- pytest

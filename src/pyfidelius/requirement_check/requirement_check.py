@@ -34,12 +34,16 @@ class RequirementCheck:
                 return False, "Java version is less than 1.8\nRequired: 1.8 or 1.8+"
 
         if not any(
-            "Java(TM) SE Runtime Environment" in line or "OpenJDK Runtime Environment" in line
+            "Java(TM) SE Runtime Environment" in line
+            or "OpenJDK Runtime Environment" in line
             for line in outputs
         ):
             return False, "Java Runtime Environment not found."
 
-        if not any("Java HotSpot(TM)" in line or "OpenJDK 64-Bit Server VM" in line for line in outputs):
+        if not any(
+            "Java HotSpot(TM)" in line or "OpenJDK 64-Bit Server VM" in line
+            for line in outputs
+        ):
             return False, "Java VM not found."
 
         return True, "All requirements satisfied."
