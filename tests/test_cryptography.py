@@ -25,8 +25,8 @@ def test_encrypt():
 
 
 def test_sane_encrypt():
-    encrypted_data = cryptography.encrypt(
-        string_to_encrypt="SGVsbG8gV29ybGRweXRlc3QgLg==",
+    encrypted_data = cryptography.sane_encrypt(
+        encoded_string_to_encrypt="SGVsbG8gV29ybGRweXRlc3QgLg==",
         sender_nonce="lmXgblZwotx+DfBgKJF0lZXtAXgBEYr5khh79Zytr2Y=",
         requester_nonce="6uj1RdDUbcpI3lVMZvijkMC8Te20O4Bcyz0SyivX8Eg=",
         sender_private_key="AYhVZpbVeX4KS5Qm/W0+9Ye2q3rnVVGmqRICmseWni4=",

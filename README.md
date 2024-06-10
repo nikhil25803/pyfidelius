@@ -24,9 +24,9 @@ Methods available :
 | Method                  | Details                                                                                                            |
 | ----------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | `generate_key_material` | Generates an ECDH key pair, and a random nonce.                                                                    |
-| `encrypt`               | Encrypts a given string of data.                                                                                      |
-| `sane_encrypt`          | Same as the ncrypt command, the only difference being that it accepts a base64 encoded version of the input string. |
-| `decrypt`               | Decrypt the encoded data back to the original string.                                                                  |
-| `file_operation`        | ECDH Cryptography can also be applied to files for both encryption and decryption.                                  |
+| `encrypt`               | Encrypts a given string data.                                                                                      |
+| `sane_encrypt`          | Same as encrypt command, with the only difference being that it accepts base64 encoded version of the input string. |
+| `decrypt`               | Decrypt the encoded data back to original string.                                                                  |
+| `file_operation`        | ECDH Cryptography can also be applied on file for both encryption and decryption.                                  |
 
 > A brief documentation about each method is mentioned in the method's docstring.
