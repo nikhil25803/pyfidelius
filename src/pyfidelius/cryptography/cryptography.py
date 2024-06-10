@@ -1,10 +1,10 @@
-import re
+import subprocess
 import os
 import json
 import base64
 import logging
 import platform
-import subprocess
+import re
 from typing import List
 from rich.logging import RichHandler
 
@@ -18,27 +18,6 @@ log = logging.getLogger("rich")
 
 
 class Cryptography:
-    """
-    Class responsible for different operations like encoding, decoding, etc.
-
-    Create an instance of the class
-    ```py
-    from pyfidelius.cryptography import Cryptography
-
-    ecdh = Cryptography()
-    ```
-
-    Methods available :
-
-    | Method                        | Details                                                               |
-    | ----------------------------- | --------------------------------------------------------------------- |
-    | `generate_key_material` | Generates an ECDH key pair, and a random nonce.|
-    | `encrypt` | Encrypts a given string data.|
-    | `sane_encrypt` | Same as ncrypt command, with the only difference being that it accepts base64 encoded version of the input string.|
-    | `decrypt` | Decrypt the encoded data back to original string.|
-    | `file_operation` | ECDH Cryptography can also be applied on file for both encryption and decryption.|
-    """
-
     def __init__(self) -> None:
         current_file_path = os.path.dirname(os.path.abspath(__file__))
         root_path = os.path.abspath(os.path.join(current_file_path, ".."))
@@ -56,14 +35,30 @@ class Cryptography:
 
         self.SCRIPT_PATH = script_path
 
+        if self.os_platform != "Windows":
+            self.__prepare_script()
+
+    def __prepare_script(self):
+        """
+        Prepares the script to be executable by fixing line endings and setting execute permissions.
+        """
+        try:
+            # Fix line endings to Unix style (LF)
+            with open(self.SCRIPT_PATH, "rb") as file:
+                content = file.read()
+            content = content.replace(b"\r\n", b"\n")  # Convert CRLF to LF
+
+            with open(self.SCRIPT_PATH, "wb") as file:
+                file.write(content)
+
+            # Make the script executable
+            subprocess.run(["chmod", "+x", self.SCRIPT_PATH], check=True)
+        except Exception as e:
+            log.error(f"Failed to prepare script. Error: {e}")
+            raise
+
     def __execute_cli_commands(self, args: List[str]) -> str:
-        """
-        Executes CLI commands based on the arguments passed in a list.
-        """
-        if self.os_platform == "Windows":
-            command_to_execute = [self.SCRIPT_PATH] + args
-        else:
-            command_to_execute = ["bash", self.SCRIPT_PATH] + args
+        command_to_execute = [self.SCRIPT_PATH] + args
 
         result = subprocess.run(
             command_to_execute,
@@ -78,9 +73,6 @@ class Cryptography:
         return result.stdout
 
     def __parse_output_to_dict(self, output: str) -> dict:
-        """
-        Parses the JSON-like output from the CLI command and converts it to a dictionary.
-        """
         pattern = r"\{.*?\}"
         match = re.search(pattern, output, re.DOTALL)
 
@@ -318,7 +310,6 @@ class Cryptography:
         <sender-public-key>
         ```
         """
-        print(file_path)
         if not os.path.exists(file_path):
             log.error(f"File not found: {file_path}")
             return None
